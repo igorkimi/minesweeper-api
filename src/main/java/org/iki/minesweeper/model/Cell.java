@@ -9,6 +9,7 @@ public class Cell {
     private Boolean isHidden;
     private CellDisplay display;
     private Boolean hasBomb;
+    private Integer bombsAround;
 
     Cell(){
         this.hasBomb = false;

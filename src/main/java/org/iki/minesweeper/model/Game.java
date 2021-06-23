@@ -16,22 +16,24 @@ public class Game {
     private Integer bombNumber;
     private Cell[][] gameMatrix;
     private String id;
-    private LocalDateTime startDate;
+    private LocalDateTime sessionStartDate;
 
     public Game(Integer colNumber, Integer rowNumber, Integer bombNumber){
         this.colNumber = colNumber;
         this.rowNumber = rowNumber;
         this.bombNumber = bombNumber;
-        this.startDate = LocalDateTime.now();
+        this.sessionStartDate = LocalDateTime.now();
         this.id = UUID.randomUUID().toString();
         this.gameMatrix = new Cell[rowNumber][colNumber];
 
+        //Initializing Cell Matrix
         for (int i=0;i<rowNumber;i++){
             for (int j=0;j<colNumber;j++){
                 this.gameMatrix[i][j] = new Cell();
             }
         }
 
+        //Setting bombs randomly on grid
         Random rand = new Random();
         for(int i=bombNumber;i>0;i--){
             int col = rand.nextInt(this.colNumber);
@@ -44,6 +46,41 @@ public class Game {
             }
         }
 
+        //Setting bombs count around each cell
+        for (int i=0;i<rowNumber;i++){
+            for (int j=0;j<colNumber;j++){
+                setBombsAroundCells(i,j);
+            }
+        }
+
+        System.out.println(printGrid());
+    }
+
+    private void setBombsAroundCells(int row, int col) {
+
+        int bombsAround = 0;
+        for (int i=-1;i<=1;i++){
+            for (int j=-1;j<=1;j++){
+                if( (i+row >= 0 && i+row < this.rowNumber)
+                    && (j+col >= 0 && j+col < this.colNumber)
+                    && this.gameMatrix[i+row][j+col].getHasBomb()
+                ) bombsAround++;
+            }
+        }
+        this.gameMatrix[row][col].setBombsAround(bombsAround);
+    }
+
+    private String printGrid(){
+        StringBuilder builder = new StringBuilder();
+
+        for (int i=0;i<rowNumber;i++){
+            for (int j=0;j<colNumber;j++){
+                if(this.gameMatrix[i][j].getHasBomb()) builder.append(" B ");
+                else builder.append(String.format(" %s ",this.gameMatrix[i][j].getBombsAround()));
+            }
+            builder.append("\n");
+        }
+        return builder.toString();
     }
 
 }
