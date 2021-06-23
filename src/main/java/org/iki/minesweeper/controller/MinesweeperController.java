@@ -1,25 +1,36 @@
 package org.iki.minesweeper.controller;
 
 import org.iki.minesweeper.model.Game;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.iki.minesweeper.service.MinesweeperGameService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class MinesweeperController {
 
-    @RequestMapping(value = "/minesweeper/game", method = RequestMethod.GET)
+    @Autowired
+    MinesweeperGameService minesweeperGameService;
+
+    @RequestMapping(path="/minesweeper/game", method = RequestMethod.GET)
     public String getGame() {
         return "game";
     }
 
-    @RequestMapping(value = "/minesweeper/game", method = RequestMethod.POST)
+    @RequestMapping(path="/minesweeper/game", method = RequestMethod.POST)
     public Game postGame(@RequestHeader("columns") Integer columns,
                          @RequestHeader("rows") Integer rows,
                          @RequestHeader("bombs") Integer bombs) {
-        return new Game(columns,rows,bombs);
+
+        return minesweeperGameService.initGame(columns,rows,bombs);
     }
 
+    @RequestMapping(path="/minesweeper/game/{gameId}", method = RequestMethod.GET)
+    public Game getGameById(@PathVariable("gameId") String id) {
+        return minesweeperGameService.getGame(id);
+    }
 
+    @RequestMapping(path="/minesweeper/game/{gameId}/print", method = RequestMethod.GET)
+    public String getGamePrintById(@PathVariable("gameId") String id) {
+        return minesweeperGameService.getGamePrint(id);
+    }
 }

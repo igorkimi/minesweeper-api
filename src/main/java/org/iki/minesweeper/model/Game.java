@@ -11,11 +11,11 @@ import java.util.UUID;
 @Setter
 public class Game {
 
+    private String gameId;
     private Integer colNumber;
     private Integer rowNumber;
     private Integer bombNumber;
     private Cell[][] gameMatrix;
-    private String id;
     private LocalDateTime sessionStartDate;
 
     public Game(Integer colNumber, Integer rowNumber, Integer bombNumber){
@@ -23,7 +23,7 @@ public class Game {
         this.rowNumber = rowNumber;
         this.bombNumber = bombNumber;
         this.sessionStartDate = LocalDateTime.now();
-        this.id = UUID.randomUUID().toString();
+        this.gameId = UUID.randomUUID().toString();
         this.gameMatrix = new Cell[rowNumber][colNumber];
 
         //Initializing Cell Matrix
@@ -70,7 +70,7 @@ public class Game {
         this.gameMatrix[row][col].setBombsAround(bombsAround);
     }
 
-    private String printGrid(){
+    public String printGrid(){
         StringBuilder builder = new StringBuilder();
 
         for (int i=0;i<rowNumber;i++){
