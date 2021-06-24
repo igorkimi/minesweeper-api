@@ -16,14 +16,16 @@ public class Game {
     private Integer rowNumber;
     private Integer bombNumber;
     private Cell[][] gameMatrix;
+    private GameStatus gameStatus;
     private LocalDateTime sessionStartDate;
 
     public Game(Integer colNumber, Integer rowNumber, Integer bombNumber){
+        this.gameId = UUID.randomUUID().toString();
+        this.gameStatus = GameStatus.ONGOING;
         this.colNumber = colNumber;
         this.rowNumber = rowNumber;
         this.bombNumber = bombNumber;
         this.sessionStartDate = LocalDateTime.now();
-        this.gameId = UUID.randomUUID().toString();
         this.gameMatrix = new Cell[rowNumber][colNumber];
 
         //Initializing Cell Matrix
@@ -77,7 +79,7 @@ public class Game {
 
     public void setCellFlag(Integer row, Integer col, CellDisplay flag) throws Exception {
         if(row > this.rowNumber || row < 1 || col < 1 || col > this.colNumber) throw new Exception("Invalid Cell");
-        this.gameMatrix[row-1][col-1].setDisplay(flag);
+        this.gameMatrix[row-1][col-1].setHiddenDisplay(flag);
     }
 
     public String printGrid(){
@@ -87,8 +89,8 @@ public class Game {
             for (int j=0;j<colNumber;j++){
 
                 if(this.gameMatrix[i][j].getIsHidden()){
-                    if(this.gameMatrix[i][j].getDisplay() == CellDisplay.QUESTION_MARK) builder.append(" ? ");
-                    if(this.gameMatrix[i][j].getDisplay() == CellDisplay.RED_FLAG) builder.append(" R ");
+                    if(this.gameMatrix[i][j].getHiddenDisplay() == CellDisplay.QUESTION_MARK) builder.append(" ? ");
+                    if(this.gameMatrix[i][j].getHiddenDisplay() == CellDisplay.RED_FLAG) builder.append(" R ");
                     else builder.append(" _ ");
                 }else{
                     if(this.gameMatrix[i][j].getHasBomb()) builder.append(" B ");
@@ -105,6 +107,20 @@ public class Game {
         this.gameMatrix[row-1][col-1].setIsHidden(false);
 
         if(this.gameMatrix[row-1][col-1].getBombsAround() == 0) setCellOpenAround(row-1, col-1);
+
+        if(this.gameMatrix[row-1][col-1].getHasBomb()) this.loseGame();
+
+    }
+
+    private void loseGame() {
+        this.gameStatus = GameStatus.LOST;
+
+        //Setting bombs count around each cell
+        for (int i=0;i<rowNumber;i++){
+            for (int j=0;j<colNumber;j++){
+                this.gameMatrix[i][j].setIsHidden(false);
+            }
+        }
     }
 
     private void setCellOpenAround(int row, int col) {

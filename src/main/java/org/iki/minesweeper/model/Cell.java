@@ -1,5 +1,9 @@
 package org.iki.minesweeper.model;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,13 +11,32 @@ import lombok.Setter;
 @Setter
 public class Cell {
     private Boolean isHidden;
-    private CellDisplay display;
+    private CellDisplay hiddenDisplay;
     private Boolean hasBomb;
     private Integer bombsAround;
 
     Cell(){
         this.hasBomb = false;
         this.isHidden = true;
-        this.display = CellDisplay.NONE;
+        this.hiddenDisplay = CellDisplay.NONE;
+    }
+
+
+    @JsonProperty("hiddenDisplay")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private CellDisplay jsonHiddenDisplay() {
+        return isHidden ? hiddenDisplay : null;
+    }
+
+    @JsonProperty("hasBomb")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean jsonHasbomb() {
+        return isHidden ? null : hasBomb;
+    }
+
+    @JsonProperty("bombsAround")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer jsonBombsAround() {
+        return isHidden ? null : bombsAround;
     }
 }

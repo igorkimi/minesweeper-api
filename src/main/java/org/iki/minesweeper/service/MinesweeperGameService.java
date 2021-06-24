@@ -3,6 +3,7 @@ package org.iki.minesweeper.service;
 import org.iki.minesweeper.model.Cell;
 import org.iki.minesweeper.model.CellDisplay;
 import org.iki.minesweeper.model.Game;
+import org.iki.minesweeper.model.ResponseWrapper;
 import org.iki.minesweeper.persistence.GamePersistenceController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -22,8 +23,8 @@ public class MinesweeperGameService {
         return newGame;
     }
 
-    public Game getGame(String id) {
-        return gamePersistenceController.getGame(id);
+    public ResponseWrapper getGame(String id) {
+        return ResponseWrapper.of(gamePersistenceController.getGame(id), null);
     }
 
     public String getGamePrint(String id) {
@@ -31,20 +32,17 @@ public class MinesweeperGameService {
         return game == null ? null : game.printGrid();
     }
 
-    public Cell getGameCell(String id, Integer column, Integer row) throws Exception {
-        Game game = gamePersistenceController.getGame(id);
-        return game == null ? null : game.getCell(row, column);
-    }
-
-    public void setGameCellFlag(String id, Integer column, Integer row, CellDisplay flag) throws Exception {
+    public ResponseWrapper setGameCellFlag(String id, Integer column, Integer row, CellDisplay flag) throws Exception {
         Game game = gamePersistenceController.getGame(id);
         game.setCellFlag(row, column, flag);
         gamePersistenceController.save(game);
+        return ResponseWrapper.of(game, null);
     }
 
-    public void setGameCellOpen(String id, Integer column, Integer row) throws Exception {
+    public ResponseWrapper setGameCellOpen(String id, Integer column, Integer row) throws Exception {
         Game game = gamePersistenceController.getGame(id);
         game.setCellOpen(row, column);
         gamePersistenceController.save(game);
+        return ResponseWrapper.of(game, null);
     }
 }
