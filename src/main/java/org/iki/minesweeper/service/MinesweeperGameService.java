@@ -1,5 +1,7 @@
 package org.iki.minesweeper.service;
 
+import org.iki.minesweeper.model.Cell;
+import org.iki.minesweeper.model.CellDisplay;
 import org.iki.minesweeper.model.Game;
 import org.iki.minesweeper.persistence.GamePersistenceController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,5 +29,22 @@ public class MinesweeperGameService {
     public String getGamePrint(String id) {
         Game game = gamePersistenceController.getGame(id);
         return game == null ? null : game.printGrid();
+    }
+
+    public Cell getGameCell(String id, Integer column, Integer row) throws Exception {
+        Game game = gamePersistenceController.getGame(id);
+        return game == null ? null : game.getCell(row, column);
+    }
+
+    public void setGameCellFlag(String id, Integer column, Integer row, CellDisplay flag) throws Exception {
+        Game game = gamePersistenceController.getGame(id);
+        game.setCellFlag(row, column, flag);
+        gamePersistenceController.save(game);
+    }
+
+    public void setGameCellOpen(String id, Integer column, Integer row) throws Exception {
+        Game game = gamePersistenceController.getGame(id);
+        game.setCellOpen(row, column);
+        gamePersistenceController.save(game);
     }
 }

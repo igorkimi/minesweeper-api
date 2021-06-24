@@ -70,17 +70,59 @@ public class Game {
         this.gameMatrix[row][col].setBombsAround(bombsAround);
     }
 
+    public Cell getCell(Integer row, Integer col) throws Exception {
+        if(row > this.rowNumber || row < 1 || col < 1 || col > this.colNumber) throw new Exception("Invalid Cell");
+        return this.gameMatrix[row-1][col-1];
+    }
+
+    public void setCellFlag(Integer row, Integer col, CellDisplay flag) throws Exception {
+        if(row > this.rowNumber || row < 1 || col < 1 || col > this.colNumber) throw new Exception("Invalid Cell");
+        this.gameMatrix[row-1][col-1].setDisplay(flag);
+    }
+
     public String printGrid(){
         StringBuilder builder = new StringBuilder();
 
         for (int i=0;i<rowNumber;i++){
             for (int j=0;j<colNumber;j++){
-                if(this.gameMatrix[i][j].getHasBomb()) builder.append(" B ");
-                else builder.append(String.format(" %s ",this.gameMatrix[i][j].getBombsAround()));
+
+                if(this.gameMatrix[i][j].getIsHidden()){
+                    if(this.gameMatrix[i][j].getDisplay() == CellDisplay.QUESTION_MARK) builder.append(" ? ");
+                    if(this.gameMatrix[i][j].getDisplay() == CellDisplay.RED_FLAG) builder.append(" R ");
+                    else builder.append(" _ ");
+                }else{
+                    if(this.gameMatrix[i][j].getHasBomb()) builder.append(" B ");
+                    else builder.append(String.format(" %s ",this.gameMatrix[i][j].getBombsAround()));
+                }
             }
             builder.append("\n");
         }
         return builder.toString();
     }
+
+    public void setCellOpen(Integer row, Integer col) throws Exception {
+        if(row > this.rowNumber || row < 1 || col < 1 || col > this.colNumber) throw new Exception("Invalid Cell");
+        this.gameMatrix[row-1][col-1].setIsHidden(false);
+
+        if(this.gameMatrix[row-1][col-1].getBombsAround() == 0) setCellOpenAround(row-1, col-1);
+    }
+
+    private void setCellOpenAround(int row, int col) {
+
+        int bombsAround = 0;
+        for (int i=-1;i<=1;i++){
+            for (int j=-1;j<=1;j++){
+                if( (i+row >= 0 && i+row < this.rowNumber)
+                        && (j+col >= 0 && j+col < this.colNumber)
+                        && this.gameMatrix[i+row][j+col].getIsHidden()
+                ){
+                    this.gameMatrix[i+row][j+col].setIsHidden(false);
+                    if(this.gameMatrix[i+row][j+col].getBombsAround() == 0) setCellOpenAround(i+row, j+col);
+                }
+            }
+        }
+        this.gameMatrix[row][col].setBombsAround(bombsAround);
+    }
+
 
 }
