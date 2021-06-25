@@ -14,35 +14,32 @@ public class MinesweeperGameService {
     @Autowired
     GamePersistenceController gamePersistenceController;
 
-    public Game initGame(Integer columns, Integer rows, Integer bombs) {
-
+    public ResponseWrapper initGame(Integer columns, Integer rows, Integer bombs, String username) throws Exception {
         Game newGame = new Game(columns,rows,bombs);
+        gamePersistenceController.saveGame(newGame, username);
 
-        gamePersistenceController.saveGame(newGame);
-
-        return newGame;
+        return ResponseWrapper.of(newGame, null);
     }
 
-    public ResponseWrapper getGame(String id) {
-        return ResponseWrapper.of(gamePersistenceController.getGame(id), null);
+    public ResponseWrapper getGame(String id, String username) throws Exception {
+        return ResponseWrapper.of(gamePersistenceController.getGame(id,username), null);
     }
 
-    public String getGamePrint(String id) {
-        Game game = gamePersistenceController.getGame(id);
-        return game == null ? null : game.printGrid();
+    public ResponseWrapper getGames(String username) throws Exception {
+        return ResponseWrapper.of(gamePersistenceController.getGames(username));
     }
 
-    public ResponseWrapper setGameCellFlag(String id, Integer column, Integer row, CellDisplay flag) throws Exception {
-        Game game = gamePersistenceController.getGame(id);
+    public ResponseWrapper setGameCellFlag(String id, Integer column, Integer row, CellDisplay flag, String username) throws Exception {
+        Game game = gamePersistenceController.getGame(id, username);
         game.setCellFlag(row, column, flag);
-        gamePersistenceController.saveGame(game);
+        gamePersistenceController.saveGame(game, username);
         return ResponseWrapper.of(game, null);
     }
 
-    public ResponseWrapper setGameCellOpen(String id, Integer column, Integer row) throws Exception {
-        Game game = gamePersistenceController.getGame(id);
+    public ResponseWrapper setGameCellOpen(String id, Integer column, Integer row, String username) throws Exception {
+        Game game = gamePersistenceController.getGame(id, username);
         game.setCellOpen(row, column);
-        gamePersistenceController.saveGame(game);
+        gamePersistenceController.saveGame(game, username);
         return ResponseWrapper.of(game, null);
     }
 }

@@ -55,8 +55,6 @@ public class Game implements Serializable {
                 setBombsAroundCells(i,j);
             }
         }
-
-        System.out.println(printGrid());
     }
 
     private void setBombsAroundCells(int row, int col) {
@@ -78,8 +76,10 @@ public class Game implements Serializable {
         this.gameMatrix[row-1][col-1].setHiddenDisplay(flag);
     }
 
+
     public String printGrid(){
         StringBuilder builder = new StringBuilder();
+        builder.append("\n");
 
         for (int i=0;i<rowNumber;i++){
             for (int j=0;j<colNumber;j++){
@@ -153,6 +153,4 @@ public class Game implements Serializable {
         }
         this.gameMatrix[row][col].setBombsAround(bombsAround);
     }
-
-
 }
