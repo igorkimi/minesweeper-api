@@ -3,21 +3,22 @@ package org.iki.minesweeper.model;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Random;
 import java.util.UUID;
 
 @Getter
 @Setter
-public class Game {
+public class Game implements Serializable {
 
     private String gameId;
+    private GameStatus gameStatus;
+    private LocalDateTime sessionStartDate;
     private Integer colNumber;
     private Integer rowNumber;
     private Integer bombNumber;
     private Cell[][] gameMatrix;
-    private GameStatus gameStatus;
-    private LocalDateTime sessionStartDate;
 
     public Game(Integer colNumber, Integer rowNumber, Integer bombNumber){
         this.gameId = UUID.randomUUID().toString();
@@ -72,11 +73,6 @@ public class Game {
         this.gameMatrix[row][col].setBombsAround(bombsAround);
     }
 
-    public Cell getCell(Integer row, Integer col) throws Exception {
-        if(row > this.rowNumber || row < 1 || col < 1 || col > this.colNumber) throw new Exception("Invalid Cell");
-        return this.gameMatrix[row-1][col-1];
-    }
-
     public void setCellFlag(Integer row, Integer col, CellDisplay flag) throws Exception {
         if(row > this.rowNumber || row < 1 || col < 1 || col > this.colNumber) throw new Exception("Invalid Cell");
         this.gameMatrix[row-1][col-1].setHiddenDisplay(flag);
@@ -109,13 +105,31 @@ public class Game {
         if(this.gameMatrix[row-1][col-1].getBombsAround() == 0) setCellOpenAround(row-1, col-1);
 
         if(this.gameMatrix[row-1][col-1].getHasBomb()) this.loseGame();
+        else this.validateWinCondition();
+    }
 
+    private void validateWinCondition() {
+        int hiddenCellsCount = 0;
+        for (int i=0;i<rowNumber;i++){
+            for (int j=0;j<colNumber;j++){
+                if (this.gameMatrix[i][j].getIsHidden()) hiddenCellsCount++;
+            }
+        }
+
+        if(hiddenCellsCount == this.bombNumber){
+            for (int i=0;i<rowNumber;i++){
+                for (int j=0;j<colNumber;j++){
+                    this.gameMatrix[i][j].setIsHidden(false);
+                }
+            }
+            this.setGameStatus(GameStatus.WON);
+        }
     }
 
     private void loseGame() {
         this.gameStatus = GameStatus.LOST;
 
-        //Setting bombs count around each cell
+        //opening all cells
         for (int i=0;i<rowNumber;i++){
             for (int j=0;j<colNumber;j++){
                 this.gameMatrix[i][j].setIsHidden(false);

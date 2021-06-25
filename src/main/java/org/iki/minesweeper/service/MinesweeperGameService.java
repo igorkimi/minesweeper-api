@@ -18,7 +18,7 @@ public class MinesweeperGameService {
 
         Game newGame = new Game(columns,rows,bombs);
 
-        gamePersistenceController.save(newGame);
+        gamePersistenceController.saveGame(newGame);
 
         return newGame;
     }
@@ -35,14 +35,14 @@ public class MinesweeperGameService {
     public ResponseWrapper setGameCellFlag(String id, Integer column, Integer row, CellDisplay flag) throws Exception {
         Game game = gamePersistenceController.getGame(id);
         game.setCellFlag(row, column, flag);
-        gamePersistenceController.save(game);
+        gamePersistenceController.saveGame(game);
         return ResponseWrapper.of(game, null);
     }
 
     public ResponseWrapper setGameCellOpen(String id, Integer column, Integer row) throws Exception {
         Game game = gamePersistenceController.getGame(id);
         game.setCellOpen(row, column);
-        gamePersistenceController.save(game);
+        gamePersistenceController.saveGame(game);
         return ResponseWrapper.of(game, null);
     }
 }
