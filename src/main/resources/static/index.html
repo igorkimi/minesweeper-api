@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <title>Minesweeper!</title>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+    <!-- Custom JS -->
+    <script type="text/javascript">
+
+        let envVar;
+
+        function getErrorAlert(message){
+            return getAlert(message, "alert-danger");
+        }
+
+        function getInfoAlert(message){
+            return getAlert(message, "alert-info");
+        }
+
+        function getAlert(message, category){
+            let defaultAlert = ""+
+                "<div class=\"alert <<<category>>> alert-dismissible fade show\" role=\"alert\">"+
+                "    <<<message>>>"+
+                "    <button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">"+
+                "        <span aria-hidden=\"true\">&times;</span>"+
+                "    </button>"+
+                "</div>";
+
+            let alert = defaultAlert.replace("<<<category>>>", category);
+            alert = alert.replace("<<<message>>>", message);
+
+            return alert;
+        }
+
+        function callbackFunction(xmlhttp){
+            //alert(xmlhttp.responseXML);
+        }
+
+        function createUser(){
+            let username = document.getElementById('inputUsername').value;
+            let password = document.getElementById('inputPassword').value;
+
+            let endpoint = window.location.protocol + window.location.hostname + ':' + window.location.port + '/minesweeper/user';
+
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = callbackFunction(xmlhttp);
+            xmlhttp.open("POST", "/minesweeper/user", false);
+            xmlhttp.setRequestHeader("password", password);
+            xmlhttp.setRequestHeader("username", username);
+
+            xmlhttp.send();
+
+            envVar = xmlhttp;
+
+            if(xmlhttp.status == 200){
+                //alert('success');
+                $("#headingTwo h5 button").click();
+
+            }else{
+                //alert('error: ' + JSON.parse(xmlhttp.responseText).errorMessage);
+                document.getElementById("stepOneAlert").innerHTML = getErrorAlert(JSON.parse(xmlhttp.responseText).errorMessage);
+            }
+
+
+
+
+        }
+
+
+
+
+    </script>
+</head>
+<body>
+
+<main role="main" class="container">
+    <h1 class="mt-5">Minesweeper Online</h1>
+    <p class="lead"></p>
+
+    <div id="accordion">
+        <div class="card">
+            <div class="card-header" id="headingOne">
+                <h5 class="mb-0">
+                    <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                        Step #1: Create an account or login
+                    </button>
+                </h5>
+            </div>
+
+            <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
+                <div class="card-body">
+                    <form>
+                        <div class="form-group row">
+                            <label for="inputUsername" class="col-sm-2 col-form-label">Username</label>
+                            <div class="col-sm-10">
+                                <input type="input" class="form-control" id="inputUsername" placeholder="Username">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="inputPassword" class="col-sm-2 col-form-label">Password</label>
+                            <div class="col-sm-10">
+                                <input type="password" class="form-control" id="inputPassword" placeholder="Password">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="inputUsername" class="col-sm-2 col-form-label"></label>
+                            <div class="col-sm-10">
+                                <button type="button" class="btn btn-primary mb-2" onclick="createUser()">Create Account</button>
+                                <button type="button" class="btn btn-primary mb-2" onclick="authenticate()">Login</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div  id="stepOneAlert">
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header" id="headingTwo">
+                <h5 class="mb-0">
+                    <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                        Step #2: Select your game or start a new one
+                    </button>
+                </h5>
+            </div>
+            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+                <div class="card-body">
+                    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header" id="headingThree">
+                <h5 class="mb-0">
+                    <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                        Step #3: Play Minesweeper Online!
+                    </button>
+                </h5>
+            </div>
+            <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
+                <div class="card-body">
+                    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+</main>
+
+
+
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+</body>
+</html>

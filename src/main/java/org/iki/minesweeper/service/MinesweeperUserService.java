@@ -23,6 +23,8 @@ public class MinesweeperUserService {
     }
 
     public ResponseWrapper createUser(String username, String password) throws Exception {
+        if(username == null || username.equals("") || password == null || password.equals(""))
+            throw new Exception("User and Password must be set");
         gamePersistenceController.createUser(username, md5(password));
         return ResponseWrapper.of(null, null);
     }

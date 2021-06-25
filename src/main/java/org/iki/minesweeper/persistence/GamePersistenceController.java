@@ -57,8 +57,6 @@ public class GamePersistenceController {
         return games;
     }
 
-
-
     public void createUser(String username, String password) throws Exception {
         NitriteCollection collection = this.db.getCollection("user");
 
