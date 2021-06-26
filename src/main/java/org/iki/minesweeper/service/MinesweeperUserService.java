@@ -3,6 +3,7 @@ package org.iki.minesweeper.service;
 import lombok.SneakyThrows;
 import org.iki.minesweeper.model.CellDisplay;
 import org.iki.minesweeper.model.Game;
+import org.iki.minesweeper.model.MinesweeperApiException;
 import org.iki.minesweeper.model.ResponseWrapper;
 import org.iki.minesweeper.persistence.GamePersistenceController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,16 +23,23 @@ public class MinesweeperUserService {
         return DigestUtils.md5DigestAsHex(new ByteArrayInputStream(value.getBytes()));
     }
 
-    public ResponseWrapper createUser(String username, String password) throws Exception {
-        if(username == null || username.equals("") || password == null || password.equals(""))
-            throw new Exception("User and Password must be set");
+    public ResponseWrapper createUser(String username, String password) throws MinesweeperApiException {
+        if(username == null || password == null)
+            throw new MinesweeperApiException("Username and Password must be set");
+
+        if(username.length() < 3 || password.length() < 3)
+            throw new MinesweeperApiException("Username and Password must be at least 3 characters long");
+
+        if(!username.matches("^[a-zA-Z]*$"))
+            throw new MinesweeperApiException("Username should not contain numbers or special characters");
+
         gamePersistenceController.createUser(username, md5(password));
         return ResponseWrapper.of(null, null);
     }
 
-    public void authenticate(String username, String password) throws Exception {
+    public void authenticate(String username, String password) throws MinesweeperApiException {
         if(username == null || username.equals("") || password == null || password.equals(""))
-            throw new Exception("User and Password must be set");
+            throw new MinesweeperApiException("User and Password must be set");
 
         gamePersistenceController.authenticate(username, md5(password));
     }

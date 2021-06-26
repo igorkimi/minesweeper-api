@@ -1,9 +1,6 @@
 package org.iki.minesweeper.controller;
 
-import org.iki.minesweeper.model.Cell;
-import org.iki.minesweeper.model.CellDisplay;
-import org.iki.minesweeper.model.Game;
-import org.iki.minesweeper.model.ResponseWrapper;
+import org.iki.minesweeper.model.*;
 import org.iki.minesweeper.service.MinesweeperGameService;
 import org.iki.minesweeper.service.MinesweeperUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +28,7 @@ public class MinesweeperController {
             return ResponseEntity.ok(
                     minesweeperGameService.initGame(columns,rows,bombs,username)
             );
-        } catch (Exception e) {
+        } catch (MinesweeperApiException e) {
             return ResponseEntity.status(400).body(
                     ResponseWrapper.of(null, e.getMessage())
             );
@@ -47,7 +44,7 @@ public class MinesweeperController {
             return ResponseEntity.ok(
                     minesweeperGameService.getGame(id, username)
             );
-        } catch (Exception e) {
+        } catch (MinesweeperApiException e) {
             return ResponseEntity.status(400).body(
                     ResponseWrapper.of(null, e.getMessage())
             );
@@ -61,7 +58,7 @@ public class MinesweeperController {
             return ResponseEntity.ok(
                     minesweeperGameService.getGames(username)
             );
-        } catch (Exception e) {
+        } catch (MinesweeperApiException e) {
             return ResponseEntity.status(400).body(
                     ResponseWrapper.of(null, e.getMessage())
             );
@@ -80,7 +77,7 @@ public class MinesweeperController {
             return ResponseEntity.ok(
                 minesweeperGameService.setGameCellFlag(id, column, row, flag, username)
             );
-        } catch (Exception e) {
+        } catch (MinesweeperApiException e) {
             return ResponseEntity.status(400).body(
                 ResponseWrapper.of(null, e.getMessage())
             );
@@ -98,9 +95,25 @@ public class MinesweeperController {
             return ResponseEntity.ok(
                 minesweeperGameService.setGameCellOpen(id, column, row, username)
             );
-        } catch (Exception e) {
+        } catch (MinesweeperApiException e) {
             return ResponseEntity.status(400).body(
                 ResponseWrapper.of(null, e.getMessage())
+            );
+        }
+    }
+
+    @RequestMapping(path="/minesweeper/game/{gameId}/pause", method = RequestMethod.POST)
+    public ResponseEntity<ResponseWrapper> pauseGameById(@PathVariable("gameId") String id,
+                                                            @RequestHeader("username") String username,
+                                                            @RequestHeader("password") String password) {
+        try {
+            minesweeperUserService.authenticate(username,password);
+            return ResponseEntity.ok(
+                    minesweeperGameService.pauseGame(id, username)
+            );
+        } catch (MinesweeperApiException e) {
+            return ResponseEntity.status(400).body(
+                    ResponseWrapper.of(null, e.getMessage())
             );
         }
     }

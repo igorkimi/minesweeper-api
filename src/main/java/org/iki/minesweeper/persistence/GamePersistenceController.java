@@ -3,6 +3,7 @@ package org.iki.minesweeper.persistence;
 import org.dizitart.no2.*;
 import org.dizitart.no2.filters.Filters;
 import org.iki.minesweeper.model.Game;
+import org.iki.minesweeper.model.MinesweeperApiException;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ public class GamePersistenceController {
 
     private Nitrite db = Nitrite.builder().compressed().openOrCreate();
 
-    public void saveGame(Game newGame, String username) throws Exception {
+    public void saveGame(Game newGame, String username) throws MinesweeperApiException {
         NitriteCollection collection = this.db.getCollection("game");
         //Tries to update document, if not available, create it.
 
@@ -25,7 +26,7 @@ public class GamePersistenceController {
 
         }else {
             if(!cursor.firstOrDefault().get("owner", String.class).equals(username))
-                throw new Exception("Authentication Failed");
+                throw new MinesweeperApiException("Authentication Failed");
 
             collection.update(
                 Filters.eq("id", newGame.getGameId()),Document.createDocument("game", newGame)
@@ -33,17 +34,17 @@ public class GamePersistenceController {
         }
     }
 
-    public Game getGame(String id, String username) throws Exception {
+    public Game getGame(String id, String username) throws MinesweeperApiException {
         NitriteCollection collection = this.db.getCollection("game");
 
         Cursor cursor = collection.find(Filters.eq("id", id));
         if(!cursor.firstOrDefault().get("owner", String.class).equals(username))
-            throw new Exception("Authentication Failed");
+            throw new MinesweeperApiException("Authentication Failed");
 
         return cursor.firstOrDefault().get("game", Game.class);
     }
 
-    public List<Game> getGames(String username) throws Exception {
+    public List<Game> getGames(String username) throws MinesweeperApiException {
         NitriteCollection collection = this.db.getCollection("game");
 
         Cursor cursor = collection.find(Filters.eq("owner", username));
@@ -57,17 +58,17 @@ public class GamePersistenceController {
         return games;
     }
 
-    public void createUser(String username, String password) throws Exception {
+    public void createUser(String username, String password) throws MinesweeperApiException {
         NitriteCollection collection = this.db.getCollection("user");
 
         Cursor users = collection.find(Filters.eq("username", username));
-        if(users.size() > 0) throw new Exception("User already exists");
+        if(users.size() > 0) throw new MinesweeperApiException("User already exists");
 
         Document game = Document.createDocument("username", username).put("password", password);
         collection.insert(game);
     }
 
-    public void authenticate(String username, String password) throws Exception {
+    public void authenticate(String username, String password) throws MinesweeperApiException {
         NitriteCollection collection = this.db.getCollection("user");
         Cursor cursor = collection.find(
             Filters.and(
@@ -76,6 +77,6 @@ public class GamePersistenceController {
             )
         );
 
-        if(cursor.size() == 0) throw new Exception("Authentication Failed");
+        if(cursor.size() == 0) throw new MinesweeperApiException("Authentication Failed");
     }
 }

@@ -40,21 +40,27 @@
             return alert;
         }
 
-        function getGameTableRow(gamestatus, rows, cols, bombs, gameid){
+        function getGameTableRow(gamestatus, rows, cols, bombs, gameid, timeplayed, startdate){
             let defaultRow = ""+
                 "<tr>"+
                 "    <td><<<gamestatus>>></td>"+
+                "    <td><<<startdate>>></td>"+
                 "    <td><<<rows>>></td>"+
                 "    <td><<<cols>>></td>"+
                 "    <td><<<bombs>>></td>"+
+                "    <td><<<timeplayed>>>s</td>"+
                 "    <td><button type=\"button\" class=\"btn btn-secondary btn-sm\" onclick=\"loadGame('<<<gameid>>>')\">Continue Game</button></td>"+
                 "</tr>";
+
+
 
             let row = defaultRow.replace("<<<gamestatus>>>", gamestatus);
             row = row.replace("<<<rows>>>", rows);
             row = row.replace("<<<cols>>>", cols);
             row = row.replace("<<<bombs>>>", bombs);
             row = row.replace("<<<gameid>>>", gameid);
+            row = row.replace("<<<startdate>>>", new Date(startdate).toLocaleString());
+            row = row.replace("<<<timeplayed>>>", Math.floor(timeplayed/1000000000));
 
             return row;
         }
@@ -126,12 +132,11 @@
 
             xmlhttp.send();
 
-            envVar = xmlhttp;
-
             if(xmlhttp.status == 200){
 
                 let game = JSON.parse(xmlhttp.responseText);
                 updateMineField(game.game);
+                setInterval(updateGameTimeLabel, 500);
 
                 $("#headingThree h5 button").click();
             }else{
@@ -159,7 +164,11 @@
                 let gamesTable = "";
 
                 for(var i=0; i<games.length; i++) {
-                    gamesTable += getGameTableRow(games[i].gameStatus, games[i].rowNumber, games[i].colNumber, games[i].bombNumber, games[i].gameId);
+                    gamesTable += getGameTableRow(
+                        games[i].gameStatus, games[i].rowNumber,
+                        games[i].colNumber, games[i].bombNumber,
+                        games[i].gameId,games[i].timePlayed, games[i].sessionStartDate
+                        );
                 }
                 document.getElementById("myGameList").innerHTML = gamesTable;
 
@@ -168,11 +177,32 @@
             }
         }
 
+        function loadGame(gameId){
+            let username = document.getElementById('inputUsername').value;
+            let password = document.getElementById('inputPassword').value;
+
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = callbackFunction(xmlhttp);
+            xmlhttp.open("GET", "/minesweeper/game/"+gameId, false);
+            xmlhttp.setRequestHeader("password", password);
+            xmlhttp.setRequestHeader("username", username);
+
+            xmlhttp.send();
+
+            if(xmlhttp.status == 200){
+                let game = JSON.parse(xmlhttp.responseText);
+                updateMineField(game.game);
+                setInterval(updateGameTimeLabel, 500);
+
+                $("#headingThree h5 button").click();
+            }else{
+                document.getElementById("stepTwoAlert").innerHTML = getErrorAlert(JSON.parse(xmlhttp.responseText).errorMessage);
+            }
+        }
+
         function getGameCell(cell, row, col){
 
             let cellBody = "<button type=\"button\" class=\"btn <<<category>>> cellButton\" <<<celAction>>> > <<<text>>></button>";
-
-            envVar = cell;
 
             if(cell.isHidden){
                 cellBody = cellBody.replace("<<<celAction>>>", "onmousedown=\"updateCell(event,"+(row+1) + "," + (col+1) + ",'" + cell.hiddenDisplay + "')\"");
@@ -209,14 +239,76 @@
             return cellBody;
         }
 
-        function getGameHeader(game){
+        function pauseGame(){
+            let username = document.getElementById('inputUsername').value;
+            let password = document.getElementById('inputPassword').value;
+            let gameid = document.getElementById('currentGameId').value;
 
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = callbackFunction(xmlhttp);
+            xmlhttp.open("POST", "/minesweeper/game/"+gameid+"/pause", false);
+            xmlhttp.setRequestHeader("password", password);
+            xmlhttp.setRequestHeader("username", username);
+            xmlhttp.setRequestHeader("gameid", gameid);
+
+            xmlhttp.send();
+
+            if(xmlhttp.status == 200){
+                let game = JSON.parse(xmlhttp.responseText);
+                updateMineField(game.game);
+
+                $("#headingTwo h5 button").click();
+            }else{
+                document.getElementById("stepTwoAlert").innerHTML = getErrorAlert(JSON.parse(xmlhttp.responseText).errorMessage);
+            }
+        }
+
+        function getGameHeader(game){
             let header = ""+
-                "<input type=\"hidden\" id=\"currentGameId\" name=\"currentGameId\" value=\"<<<gameid>>>\">";
+                "<input type=\"hidden\" id=\"currentGameId\" value=\"<<<gameid>>>\">"+
+                "<input type=\"hidden\" id=\"currentGameTimePlayed\" value=\"<<<timePlayed>>>\">"+
+                "<input type=\"hidden\" id=\"currentGameLastMoveDate\" value=\"<<<lastMoveDate>>>\">"+
+                "<div class=\"input-group\">"+
+                "    <div class=\"input-group-prepend\">"+
+                "        <span class=\"input-group-text\">Bombs Left: <strong><<<bombsLeft>>></strong></span>"+
+                "        <span class=\"input-group-text\" id=\"timePlayedLabel\">Time: <strong><<<timePlayed>>></strong></span>"+
+                "    </div>"+
+                "    <input type=\"text\" class=\"form-control\" aria-label=\"Text input with checkbox\" value=\"<<<textMessage>>>\" readonly>"+
+                "    <div class=\"input-group-append\">"+
+                "        <button class=\"btn btn-primary\" type=\"button\" onclick=\"pauseGame()\">Exit Game</button>"+
+                "    </div>"+
+                "</div><hr>"+
+                "";
+
+            let bombsLeftText = game.gameStatus != "ONGOING" ? "0" : game.bombsLeft;
+            let messageText = "";
+            if(game.gameStatus == "WON") messageText = "You Won!";
+            else if(game.gameStatus == "LOST") messageText = "You Lost!";
+
+            let timePlayed = getTimePlayed(game.timePlayed, game.lastMoveDate);
 
             header = header.replace("<<<gameid>>>", game.gameId);
+            header = header.replace("<<<timePlayed>>>", game.timePlayed);
+            header = header.replace("<<<lastMoveDate>>>", game.lastMoveDate);
+            header = header.replace("<<<bombsLeft>>>", bombsLeftText);
+            header = header.replace("<<<timePlayed>>>", timePlayed);
+            header = header.replace("<<<textMessage>>>", messageText);
+
+            envVar = game;
 
             return header;
+        }
+
+        function getTimePlayed(previousTimePlayed, lastMoveDate){
+            let timePlayed;
+
+            if(lastMoveDate == null || lastMoveDate == "null" || lastMoveDate == ""){
+                timePlayed = Math.floor(previousTimePlayed/1000000000);
+            }else{
+                timePlayed = Math.floor((previousTimePlayed/1000000000) + ((new Date() - new Date(lastMoveDate)) / 1000));
+            }
+
+            return timePlayed;
         }
 
         function updateMineField(game){
@@ -278,11 +370,19 @@
             }
         }
 
+        function updateGameTimeLabel(){
+            let timePlayed = document.getElementById('currentGameTimePlayed').value;
+            let lastMoveDate = document.getElementById('currentGameLastMoveDate').value;
+            let timePlayedValue = getTimePlayed(timePlayed, lastMoveDate);
+
+            document.getElementById('timePlayedLabel').innerHTML = "Time: <strong>"+timePlayedValue+"</strong>";
+        }
+
     </script>
     <style>
         .cellButton{
-            height: 30px;
-            width: 30px;
+            height: 25px;
+            width: 25px;
             padding: 0px;
             margin: 2px 2px;
         }
@@ -384,9 +484,11 @@
                         <thead>
                         <tr>
                             <th scope="col">Game Status</th>
+                            <th scope="col">Start Date</th>
                             <th scope="col">Rows</th>
                             <th scope="col">Columns</th>
                             <th scope="col">Bombs</th>
+                            <th scope="col">Time Played</th>
                             <th scope="col">
                                 <button type="button" class="btn btn-primary btn-sm" onclick="loadGames()">Load My Games</button>
                             </th>
@@ -411,15 +513,7 @@
             <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
                 <div class="card-body">
 
-                    <form id="minefieldHeader">
-                        <div class="form-group row">
-                            <label for="bombNumber" class="col-sm-2 col-form-label">Number of Bombs</label>
-                            <div class="col-sm-10">
-                                <input type="number" readonly class="form-control-plaintext" placeholder="Number of Bombs">
-                            </div>
-                        </div>
-                    </form>
-
+                    <form id="minefieldHeader"></form>
                     <div id="minefield"></div>
                     <div id="stepThreeAlert"></div>
                 </div>

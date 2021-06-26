@@ -1,12 +1,19 @@
 package org.iki.minesweeper.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.temporal.TemporalUnit;
 import java.util.Random;
 import java.util.UUID;
+
+import static java.time.temporal.ChronoUnit.NANOS;
+import static java.time.temporal.ChronoUnit.SECONDS;
 
 @Getter
 @Setter
@@ -15,6 +22,8 @@ public class Game implements Serializable {
     private String gameId;
     private GameStatus gameStatus;
     private LocalDateTime sessionStartDate;
+    private LocalDateTime lastMoveDate;
+    private Long timePlayed;
     private Integer colNumber;
     private Integer rowNumber;
     private Integer bombNumber;
@@ -27,6 +36,8 @@ public class Game implements Serializable {
         this.rowNumber = rowNumber;
         this.bombNumber = bombNumber;
         this.sessionStartDate = LocalDateTime.now();
+        this.lastMoveDate = LocalDateTime.now();
+        this.timePlayed = Long.valueOf(0);
         this.gameMatrix = new Cell[rowNumber][colNumber];
 
         //Initializing Cell Matrix
@@ -57,6 +68,20 @@ public class Game implements Serializable {
         }
     }
 
+    @JsonProperty("bombsLeft")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer getBombsLeft(){
+        Integer bombs = this.bombNumber;
+
+        for (int i=0;i<rowNumber;i++){
+            for (int j=0;j<colNumber;j++){
+                if(this.gameMatrix[i][j].getHiddenDisplay() != CellDisplay.NONE && this.gameMatrix[i][j].getIsHidden()) bombs--;
+            }
+        }
+
+        return bombs;
+    }
+
     private void setBombsAroundCells(int row, int col) {
 
         int bombsAround = 0;
@@ -71,8 +96,9 @@ public class Game implements Serializable {
         this.gameMatrix[row][col].setBombsAround(bombsAround);
     }
 
-    public void setCellFlag(Integer row, Integer col, CellDisplay flag) throws Exception {
-        if(row > this.rowNumber || row < 1 || col < 1 || col > this.colNumber) throw new Exception("Invalid Cell");
+    public void setCellFlag(Integer row, Integer col, CellDisplay flag) throws MinesweeperApiException {
+        if(row > this.rowNumber || row < 1 || col < 1 || col > this.colNumber) throw new MinesweeperApiException("Invalid Cell");
+        this.updateTimePlayed();
         this.gameMatrix[row-1][col-1].setHiddenDisplay(flag);
     }
 
@@ -98,14 +124,25 @@ public class Game implements Serializable {
         return builder.toString();
     }
 
-    public void setCellOpen(Integer row, Integer col) throws Exception {
-        if(row > this.rowNumber || row < 1 || col < 1 || col > this.colNumber) throw new Exception("Invalid Cell");
+    public void setCellOpen(Integer row, Integer col) throws MinesweeperApiException {
+        if(row > this.rowNumber || row < 1 || col < 1 || col > this.colNumber) throw new MinesweeperApiException("Invalid Cell");
+
+        this.updateTimePlayed();
         this.gameMatrix[row-1][col-1].setIsHidden(false);
 
         if(this.gameMatrix[row-1][col-1].getBombsAround() == 0) setCellOpenAround(row-1, col-1);
 
         if(this.gameMatrix[row-1][col-1].getHasBomb()) this.loseGame();
         else this.validateWinCondition();
+    }
+
+    private void updateTimePlayed() {
+        if(this.lastMoveDate != null) {
+            Duration duration = Duration.between(lastMoveDate, LocalDateTime.now());
+            this.timePlayed += (duration.get(SECONDS)*1000000000 + duration.get(NANOS));
+        }
+
+        this.lastMoveDate = LocalDateTime.now();
     }
 
     private void validateWinCondition() {
@@ -123,11 +160,13 @@ public class Game implements Serializable {
                 }
             }
             this.setGameStatus(GameStatus.WON);
+            this.lastMoveDate = null;
         }
     }
 
     private void loseGame() {
         this.gameStatus = GameStatus.LOST;
+        this.lastMoveDate = null;
 
         //opening all cells
         for (int i=0;i<rowNumber;i++){
@@ -152,5 +191,10 @@ public class Game implements Serializable {
             }
         }
         this.gameMatrix[row][col].setBombsAround(bombsAround);
+    }
+
+    public void pause() {
+        this.updateTimePlayed();
+        this.lastMoveDate = null;
     }
 }
