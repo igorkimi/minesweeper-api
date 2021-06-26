@@ -19,8 +19,8 @@ public class MinesweeperGameService {
         if(columns == null || columns <= 0 || rows == null || rows <= 0 || bombs == null || bombs <= 0)
             throw new Exception("Number of rows, columns and bombs must be higher than zero");
 
-        if(columns * rows < bombs)
-            throw new Exception("There's not enough space for all the bombs");
+        if(columns * rows <= bombs)
+            throw new Exception("Number of bombs should be less than number of squares");
 
         Game newGame = new Game(columns,rows,bombs);
         gamePersistenceController.saveGame(newGame, username);

@@ -129,6 +129,10 @@
             envVar = xmlhttp;
 
             if(xmlhttp.status == 200){
+
+                let game = JSON.parse(xmlhttp.responseText);
+                updateMineField(game.game);
+
                 $("#headingThree h5 button").click();
             }else{
                 document.getElementById("stepTwoAlert").innerHTML = getErrorAlert(JSON.parse(xmlhttp.responseText).errorMessage);
@@ -162,12 +166,135 @@
             }else{
                 document.getElementById("stepTwoAlert").innerHTML = getErrorAlert(JSON.parse(xmlhttp.responseText).errorMessage);
             }
+        }
 
+        function getGameCell(cell, row, col){
+
+            let cellBody = "<button type=\"button\" class=\"btn <<<category>>> cellButton\" <<<celAction>>> > <<<text>>></button>";
+
+            envVar = cell;
+
+            if(cell.isHidden){
+                cellBody = cellBody.replace("<<<celAction>>>", "onmousedown=\"updateCell(event,"+(row+1) + "," + (col+1) + ",'" + cell.hiddenDisplay + "')\"");
+
+                if(cell.hiddenDisplay == "NONE"){
+                    cellBody = cellBody.replace("<<<category>>>", "btn-outline-dark");
+                    cellBody = cellBody.replace("<<<text>>>", "");
+                }else if(cell.hiddenDisplay == "RED_FLAG"){
+                    cellBody = cellBody.replace("<<<category>>>", "btn-warning");
+                    cellBody = cellBody.replace("<<<text>>>", "F");
+                }else{
+                    cellBody = cellBody.replace("<<<category>>>", "btn-primary");
+                    cellBody = cellBody.replace("<<<text>>>", "?");
+                }
+
+            }else{
+                cellBody = cellBody.replace("<<<celAction>>>", "disabled");
+
+                if(cell.hasBomb){
+                    cellBody = cellBody.replace("<<<category>>>", "btn-danger");
+                    cellBody = cellBody.replace("<<<text>>>", "");
+                }else{
+                    if(cell.bombsAround == 0){
+                        cellBody = cellBody.replace("<<<category>>>", "btn-secondary");
+                        cellBody = cellBody.replace("<<<text>>>", "");
+
+                     }else{
+                        cellBody = cellBody.replace("<<<category>>>", "btn-info");
+                        cellBody = cellBody.replace("<<<text>>>", cell.bombsAround);
+                     }
+                }
+            }
+
+            return cellBody;
+        }
+
+        function getGameHeader(game){
+
+            let header = ""+
+                "<input type=\"hidden\" id=\"currentGameId\" name=\"currentGameId\" value=\"<<<gameid>>>\">";
+
+            header = header.replace("<<<gameid>>>", game.gameId);
+
+            return header;
+        }
+
+        function updateMineField(game){
+
+            document.getElementById("minefieldHeader").innerHTML = getGameHeader(game);
+
+            let minefield = "";
+
+            for(var i=0; i<game.gameMatrix.length; i++) {
+                for(var j=0; j<game.gameMatrix[i].length; j++) {
+                    minefield += getGameCell(game.gameMatrix[i][j], i, j);
+                }
+                minefield += "<br>";
+            }
+
+            let minefieldStatus = "alert-secondary";
+            if(game.gameStatus == "LOST") minefieldStatus = "alert-danger"
+            else if (game.gameStatus == "WON") minefieldStatus = "alert-success"
+
+            minefield = "<div class=\"" + minefieldStatus + " minefield\" oncontextmenu=\"return false;\">" +
+                        minefield + "</div>";
+
+            document.getElementById("minefield").innerHTML = minefield;
         }
 
 
+        function updateCell(event, row, col, display){
+
+            let username = document.getElementById('inputUsername').value;
+            let password = document.getElementById('inputPassword').value;
+            let gameid = document.getElementById('currentGameId').value;
+
+            let endpoint = '/minesweeper/game/'+gameid+'/'+col+'/'+row+'/open';
+            let flag = display;
+
+            if (event.button != 0) {
+                endpoint = '/minesweeper/game/'+gameid+'/'+col+'/'+row+'/flag';
+
+                if(flag == "NONE") flag = "RED_FLAG";
+                else if(flag == "RED_FLAG") flag = "QUESTION_MARK";
+                else flag = "NONE";
+            }
+
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = callbackFunction(xmlhttp);
+            xmlhttp.open("POST", endpoint, false);
+            xmlhttp.setRequestHeader("password", password);
+            xmlhttp.setRequestHeader("username", username);
+            xmlhttp.setRequestHeader("flag", flag);
+
+            xmlhttp.send();
+
+            if(xmlhttp.status == 200){
+                let game = JSON.parse(xmlhttp.responseText).game;
+                updateMineField(game);
+
+            }else{
+                document.getElementById("stepThreeAlert").innerHTML = getErrorAlert(JSON.parse(xmlhttp.responseText).errorMessage);
+            }
+        }
 
     </script>
+    <style>
+        .cellButton{
+            height: 30px;
+            width: 30px;
+            padding: 0px;
+            margin: 2px 2px;
+        }
+
+        .minefield{
+            padding: 15px;
+            width: fit-content;
+            margin: auto;
+            border-radius: 5px;
+        }
+
+    </style>
 </head>
 <body>
 
@@ -228,19 +355,19 @@
                         <div class="form-group row">
                             <label for="rowSize" class="col-sm-2 col-form-label">Number of Rows</label>
                             <div class="col-sm-10">
-                                <input type="number" class="form-control" id="rowSize" placeholder="Number of Rows">
+                                <input type="number" class="form-control" id="rowSize" placeholder="Number of Rows" value="10">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label for="colSize" class="col-sm-2 col-form-label">Number of Columns</label>
                             <div class="col-sm-10">
-                                <input type="number" class="form-control" id="colSize" placeholder="Number of Columns">
+                                <input type="number" class="form-control" id="colSize" placeholder="Number of Columns" value="10">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label for="bombNumber" class="col-sm-2 col-form-label">Number of Bombs</label>
                             <div class="col-sm-10">
-                                <input type="number" class="form-control" id="bombNumber" placeholder="Number of Bombs">
+                                <input type="number" class="form-control" id="bombNumber" placeholder="Number of Bombs" value="10">
                             </div>
                         </div>
                         <div class="form-group row">
@@ -283,7 +410,18 @@
             </div>
             <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
                 <div class="card-body">
-                    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+
+                    <form id="minefieldHeader">
+                        <div class="form-group row">
+                            <label for="bombNumber" class="col-sm-2 col-form-label">Number of Bombs</label>
+                            <div class="col-sm-10">
+                                <input type="number" readonly class="form-control-plaintext" placeholder="Number of Bombs">
+                            </div>
+                        </div>
+                    </form>
+
+                    <div id="minefield"></div>
+                    <div id="stepThreeAlert"></div>
                 </div>
             </div>
         </div>

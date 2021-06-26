@@ -21,13 +21,6 @@ public class Cell {
         this.hiddenDisplay = CellDisplay.NONE;
     }
 
-
-    @JsonProperty("hiddenDisplay")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private CellDisplay jsonHiddenDisplay() {
-        return isHidden ? hiddenDisplay : null;
-    }
-
     @JsonProperty("hasBomb")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Boolean jsonHasbomb() {
