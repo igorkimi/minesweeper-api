@@ -7,8 +7,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.temporal.TemporalUnit;
+import java.time.ZonedDateTime;
 import java.util.Random;
 import java.util.UUID;
 
@@ -21,8 +20,8 @@ public class Game implements Serializable {
 
     private String gameId;
     private GameStatus gameStatus;
-    private LocalDateTime sessionStartDate;
-    private LocalDateTime lastMoveDate;
+    private ZonedDateTime sessionStartDate;
+    private ZonedDateTime lastMoveDate;
     private Long timePlayed;
     private Integer colNumber;
     private Integer rowNumber;
@@ -35,8 +34,8 @@ public class Game implements Serializable {
         this.colNumber = colNumber;
         this.rowNumber = rowNumber;
         this.bombNumber = bombNumber;
-        this.sessionStartDate = LocalDateTime.now();
-        this.lastMoveDate = LocalDateTime.now();
+        this.sessionStartDate = ZonedDateTime.now();
+        this.lastMoveDate = ZonedDateTime.now();
         this.timePlayed = Long.valueOf(0);
         this.gameMatrix = new Cell[rowNumber][colNumber];
 
@@ -70,7 +69,7 @@ public class Game implements Serializable {
 
     @JsonProperty("bombsLeft")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Integer getBombsLeft(){
+    public Integer getBombsLeft(){
         Integer bombs = this.bombNumber;
 
         for (int i=0;i<rowNumber;i++){
@@ -138,11 +137,11 @@ public class Game implements Serializable {
 
     private void updateTimePlayed() {
         if(this.lastMoveDate != null) {
-            Duration duration = Duration.between(lastMoveDate, LocalDateTime.now());
+            Duration duration = Duration.between(lastMoveDate, ZonedDateTime.now());
             this.timePlayed += (duration.get(SECONDS)*1000000000 + duration.get(NANOS));
         }
 
-        this.lastMoveDate = LocalDateTime.now();
+        this.lastMoveDate = ZonedDateTime.now();
     }
 
     private void validateWinCondition() {

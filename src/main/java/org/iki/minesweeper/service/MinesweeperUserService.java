@@ -39,7 +39,7 @@ public class MinesweeperUserService {
 
     public void authenticate(String username, String password) throws MinesweeperApiException {
         if(username == null || username.equals("") || password == null || password.equals(""))
-            throw new MinesweeperApiException("User and Password must be set");
+            throw new MinesweeperApiException("Username and Password must be set");
 
         gamePersistenceController.authenticate(username, md5(password));
     }
