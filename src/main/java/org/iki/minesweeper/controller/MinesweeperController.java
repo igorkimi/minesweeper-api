@@ -20,9 +20,9 @@ public class MinesweeperController {
     MinesweeperUserService minesweeperUserService;
 
     @RequestMapping(path="/minesweeper/game", method = RequestMethod.POST)
-    public ResponseEntity<ResponseWrapper> createGame(@RequestHeader("columns") Integer columns,
-                         @RequestHeader("rows") Integer rows,
-                         @RequestHeader("bombs") Integer bombs,
+    public ResponseEntity<ResponseWrapper> createGame(@RequestHeader(value="columns",required=false) Integer columns,
+                         @RequestHeader(value="rows",required=false) Integer rows,
+                         @RequestHeader(value="bombs",required=false) Integer bombs,
                          @RequestHeader("username") String username,
                          @RequestHeader("password") String password) {
 
@@ -54,7 +54,7 @@ public class MinesweeperController {
         }
     }
 
-    @RequestMapping(path="/minesweeper/game/", method = RequestMethod.GET)
+    @RequestMapping(path="/minesweeper/game", method = RequestMethod.GET)
     public ResponseEntity<ResponseWrapper> getGames(@RequestHeader("username") String username, @RequestHeader("password") String password) {
         try {
             minesweeperUserService.authenticate(username,password);

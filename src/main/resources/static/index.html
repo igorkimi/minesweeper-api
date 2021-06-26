@@ -40,6 +40,26 @@
             return alert;
         }
 
+        function getGameTableRow(gamestatus, rows, cols, bombs, gameid){
+            let defaultRow = ""+
+                "<tr>"+
+                "    <td><<<gamestatus>>></td>"+
+                "    <td><<<rows>>></td>"+
+                "    <td><<<cols>>></td>"+
+                "    <td><<<bombs>>></td>"+
+                "    <td><button type=\"button\" class=\"btn btn-secondary btn-sm\" onclick=\"loadGame('<<<gameid>>>')\">Continue Game</button></td>"+
+                "</tr>";
+
+            let row = defaultRow.replace("<<<gamestatus>>>", gamestatus);
+            row = row.replace("<<<rows>>>", rows);
+            row = row.replace("<<<cols>>>", cols);
+            row = row.replace("<<<bombs>>>", bombs);
+            row = row.replace("<<<gameid>>>", gameid);
+
+            return row;
+        }
+
+
         function callbackFunction(xmlhttp){
             //alert(xmlhttp.responseXML);
         }
@@ -58,22 +78,92 @@
 
             xmlhttp.send();
 
+            if(xmlhttp.status == 200){
+                $("#headingTwo h5 button").click();
+            }else{
+                document.getElementById("stepOneAlert").innerHTML = getErrorAlert(JSON.parse(xmlhttp.responseText).errorMessage);
+            }
+        }
+
+        function authenticateUser(){
+            let username = document.getElementById('inputUsername').value;
+            let password = document.getElementById('inputPassword').value;
+
+            let endpoint = window.location.protocol + window.location.hostname + ':' + window.location.port + '/minesweeper/user';
+
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = callbackFunction(xmlhttp);
+            xmlhttp.open("GET", "/minesweeper/user", false);
+            xmlhttp.setRequestHeader("password", password);
+            xmlhttp.setRequestHeader("username", username);
+
+            xmlhttp.send();
+
+            if(xmlhttp.status == 200){
+                $("#headingTwo h5 button").click();
+            }else{
+                document.getElementById("stepOneAlert").innerHTML = getErrorAlert(JSON.parse(xmlhttp.responseText).errorMessage);
+            }
+        }
+
+        function createGame(){
+            let username = document.getElementById('inputUsername').value;
+            let password = document.getElementById('inputPassword').value;
+            let rowSize = document.getElementById('rowSize').value;
+            let colSize = document.getElementById('colSize').value;
+            let bombNumber = document.getElementById('bombNumber').value;
+
+            let endpoint = window.location.protocol + window.location.hostname + ':' + window.location.port + '/minesweeper/user';
+
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = callbackFunction(xmlhttp);
+            xmlhttp.open("POST", "/minesweeper/game", false);
+            xmlhttp.setRequestHeader("password", password);
+            xmlhttp.setRequestHeader("username", username);
+            xmlhttp.setRequestHeader("rows", rowSize);
+            xmlhttp.setRequestHeader("columns", colSize);
+            xmlhttp.setRequestHeader("bombs", bombNumber);
+
+            xmlhttp.send();
+
             envVar = xmlhttp;
 
             if(xmlhttp.status == 200){
-                //alert('success');
-                $("#headingTwo h5 button").click();
-
+                $("#headingThree h5 button").click();
             }else{
-                //alert('error: ' + JSON.parse(xmlhttp.responseText).errorMessage);
-                document.getElementById("stepOneAlert").innerHTML = getErrorAlert(JSON.parse(xmlhttp.responseText).errorMessage);
+                document.getElementById("stepTwoAlert").innerHTML = getErrorAlert(JSON.parse(xmlhttp.responseText).errorMessage);
             }
-
-
-
-
         }
 
+        function loadGames(){
+
+            let username = document.getElementById('inputUsername').value;
+            let password = document.getElementById('inputPassword').value;
+
+            let endpoint = window.location.protocol + window.location.hostname + ':' + window.location.port + '/minesweeper/game';
+
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = callbackFunction(xmlhttp);
+            xmlhttp.open("GET", "/minesweeper/game", false);
+            xmlhttp.setRequestHeader("password", password);
+            xmlhttp.setRequestHeader("username", username);
+
+            xmlhttp.send();
+
+            if(xmlhttp.status == 200){
+                let games = JSON.parse(xmlhttp.responseText).games;
+                let gamesTable = "";
+
+                for(var i=0; i<games.length; i++) {
+                    gamesTable += getGameTableRow(games[i].gameStatus, games[i].rowNumber, games[i].colNumber, games[i].bombNumber, games[i].gameId);
+                }
+                document.getElementById("myGameList").innerHTML = gamesTable;
+
+            }else{
+                document.getElementById("stepTwoAlert").innerHTML = getErrorAlert(JSON.parse(xmlhttp.responseText).errorMessage);
+            }
+
+        }
 
 
 
@@ -111,18 +201,15 @@
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label for="inputUsername" class="col-sm-2 col-form-label"></label>
+                            <label class="col-sm-2 col-form-label"></label>
                             <div class="col-sm-10">
                                 <button type="button" class="btn btn-primary mb-2" onclick="createUser()">Create Account</button>
-                                <button type="button" class="btn btn-primary mb-2" onclick="authenticate()">Login</button>
+                                <button type="button" class="btn btn-primary mb-2" onclick="authenticateUser()">Login</button>
                             </div>
                         </div>
                     </form>
 
-                    <div  id="stepOneAlert">
-                    </div>
-
-
+                    <div  id="stepOneAlert"></div>
                 </div>
             </div>
         </div>
@@ -136,7 +223,53 @@
             </div>
             <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
                 <div class="card-body">
-                    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+
+                    <form>
+                        <div class="form-group row">
+                            <label for="rowSize" class="col-sm-2 col-form-label">Number of Rows</label>
+                            <div class="col-sm-10">
+                                <input type="number" class="form-control" id="rowSize" placeholder="Number of Rows">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="colSize" class="col-sm-2 col-form-label">Number of Columns</label>
+                            <div class="col-sm-10">
+                                <input type="number" class="form-control" id="colSize" placeholder="Number of Columns">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="bombNumber" class="col-sm-2 col-form-label">Number of Bombs</label>
+                            <div class="col-sm-10">
+                                <input type="number" class="form-control" id="bombNumber" placeholder="Number of Bombs">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="inputUsername" class="col-sm-2 col-form-label"></label>
+                            <div class="col-sm-10">
+                                <button type="button" class="btn btn-primary mb-2" onclick="createGame()">Start a New Game</button>
+                            </div>
+                        </div>
+                    </form>
+
+
+
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th scope="col">Game Status</th>
+                            <th scope="col">Rows</th>
+                            <th scope="col">Columns</th>
+                            <th scope="col">Bombs</th>
+                            <th scope="col">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="loadGames()">Load My Games</button>
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody id="myGameList">
+                        </tbody>
+                    </table>
+
+                    <div  id="stepTwoAlert"></div>
                 </div>
             </div>
         </div>
