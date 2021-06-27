@@ -1,15 +1,15 @@
 # Mineswepeer API
 This project aims to implement a simple Minesweeper game web implementation, including a back-end rest api and a front-end client.
 
-###Client
+### Client
 The client application is provided as a static single html file, which uses bootstrap for the user interface style and javascript for managing user inputs and connecting with the back-end api.
 
-###Back-end
+### Back-end
 The backend is a Spring Boot Java application, which uses the Nitrite no-sql in-memory database for data persistence. 
 Nitrite was selected due to the small size of the project, as well as to have quick responses from the persistence layer.
 Due to the document-oriented nature of the database, it could be replaced by others such as MongoDB.
 
-###Rest API 
+### Rest API 
 Two controllers were implemented on this api:
 - user-controller: responsible for registering an user and authenticating it;
 - minesweeper-controller: responsible for managing the user games. 
