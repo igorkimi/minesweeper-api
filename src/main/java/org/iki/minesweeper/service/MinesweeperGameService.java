@@ -1,5 +1,6 @@
 package org.iki.minesweeper.service;
 
+import org.iki.minesweeper.config.MinesweeperApiException;
 import org.iki.minesweeper.model.*;
 import org.iki.minesweeper.persistence.GamePersistenceController;
 import org.springframework.beans.factory.annotation.Autowired;

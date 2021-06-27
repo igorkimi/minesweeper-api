@@ -3,11 +3,10 @@ package org.iki.minesweeper.persistence;
 import org.dizitart.no2.*;
 import org.dizitart.no2.filters.Filters;
 import org.iki.minesweeper.model.Game;
-import org.iki.minesweeper.model.MinesweeperApiException;
+import org.iki.minesweeper.config.MinesweeperApiException;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 @Component

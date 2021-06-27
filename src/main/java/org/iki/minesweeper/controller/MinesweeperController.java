@@ -1,5 +1,6 @@
 package org.iki.minesweeper.controller;
 
+import org.iki.minesweeper.config.MinesweeperApiException;
 import org.iki.minesweeper.model.*;
 import org.iki.minesweeper.service.MinesweeperGameService;
 import org.iki.minesweeper.service.MinesweeperUserService;

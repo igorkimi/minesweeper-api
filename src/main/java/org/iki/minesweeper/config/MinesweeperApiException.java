@@ -1,4 +1,4 @@
-package org.iki.minesweeper.model;
+package org.iki.minesweeper.config;
 
 public class MinesweeperApiException extends Exception {
 

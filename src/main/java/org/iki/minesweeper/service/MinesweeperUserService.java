@@ -1,9 +1,7 @@
 package org.iki.minesweeper.service;
 
 import lombok.SneakyThrows;
-import org.iki.minesweeper.model.CellDisplay;
-import org.iki.minesweeper.model.Game;
-import org.iki.minesweeper.model.MinesweeperApiException;
+import org.iki.minesweeper.config.MinesweeperApiException;
 import org.iki.minesweeper.model.ResponseWrapper;
 import org.iki.minesweeper.persistence.GamePersistenceController;
 import org.springframework.beans.factory.annotation.Autowired;
